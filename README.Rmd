@@ -1,0 +1,11 @@
+This repository is a mini version of the full Thea Foss Tacoma repository. It has been edited for length and isolation of a particular error. 
+
+Comments have been marked with a TODO: tag for easy identification. 
+
+The scripts that have been tagged with a "kirkedit" suffix indicate the revised scripts that have already been sent over, with the <ys> error replaced with <y>. 
+
+In order to produce the error for troubleshooting, open and run the Y_error_reprex.R script. The error should be the following: 
+
+ℹ In index: 1.
+Caused by error in `!y`:
+! invalid argument type

@@ -23,8 +23,12 @@ a0 <- read_excel('data_raw/WY2021_lab_data_kc.xlsx',col_types = c(rep('text',3),
 #TODO: Added a line to print the unique names of CAS_RN. When filtering for individual CAS-RNs or a handful of them,
 #some will produce errors while others do not. I am not clear on the pattern that is causing this. 
 print(unique(a0$CAS_RN))
-# a0 <- a0 %>%
-#   filter(CAS_RN == "TSS")
+a0 <- a0 %>%
+  filter(CAS_RN == "BOD")
+
+#TODO: Filtering for TSS will not produce an error in the stormwater log. 
+# However, filtering for (for example) "BOD", or other randomly selected inputs, will produce an error.
+# The error also persists when there is no filter applied and all CAS-RNs are run (ie, the original script). 
 
 #Unchanged
 names(a0) <- tolower(names(a0))
@@ -134,7 +138,8 @@ coc.elim <- tmp %>% filter(n.per.loc < 4.5 | mx.d < ymd('2021-01-01')) %>% pus(c
 a04 <- a03 %>% filter(!coc %in% coc.elim)
 
 f <- a04 %>%
-  filter(coc == "Anthracene") #TODO: In the sediment runs, the same error appears regardless of filtering for contaminants
+  filter(coc == "Anthracene") 
+#TODO: In the sediment runs, the same error appears regardless of filtering for contaminants.
 
 
 ## SEDIMENT Linear Confidence Bands ----
