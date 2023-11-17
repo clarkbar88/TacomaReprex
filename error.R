@@ -5,10 +5,10 @@
 library(tidyverse)
 library(readxl)
 
-source('scripts_original/ci_band_lm_kirkedit.R')
+source('scripts_original/ci_band_lm_kirkedit2.R')
 source('scripts_original/ci_band_plot.R')
 source('scripts_original/pus.R')
-source('scripts_original/ci_boot_kirkedit.R')
+source('scripts_original/ci_boot_kirkedit2.R')
 source('scripts_original/impute_km.R')
 
 site <- 'Tacoma'; site.tag <- 'Tacoma'; site.filetag <- 'Tacoma_Stormwater'
@@ -20,15 +20,16 @@ fdate <- format.Date(Sys.Date(),format='%y%m%d')
 # STORMWATER WRANGLE ----
 
 a0 <- read_excel('data_raw/WY2021_lab_data_kc.xlsx',col_types = c(rep('text',3),rep('numeric',2),rep('text',3),rep('numeric',3),'date',rep('text',9),rep('numeric',9),rep('text',2)))
-#TODO: Added a line to print the unique names of CAS_RN. When filtering for individual CAS-RNs or a handful of them,
-#some will produce errors while others do not. I am not clear on the pattern that is causing this. 
+#TODO: Added a line to print the unique names of CAS_RN.  
 print(unique(a0$CAS_RN))
-a0 <- a0 %>%
-  filter(CAS_RN == "BOD")
 
-#TODO: Filtering for TSS will not produce an error in the stormwater log. 
-# However, filtering for (for example) "BOD", or other randomly selected inputs, will produce an error.
-# The error also persists when there is no filter applied and all CAS-RNs are run (ie, the original script). 
+a0 <- a0 %>% filter(CAS_RN %in% c("TSS"))
+#TODO: Filtering for TSS will not produce an error in the stormwater log, and the code executes normally.
+#TODO: The following CAS_RN will produce the error: "68334-30-5"
+# The error also occurs when there is no filtering (breaks when the code reaches that CAS_RN.)
+a0 <- a0 
+
+
 
 #Unchanged
 names(a0) <- tolower(names(a0))
@@ -93,10 +94,10 @@ dev.off()
 library(tidyverse)
 library(readxl)
 
-source('scripts_original/ci_band_lm_kirkedit.R')
+source('scripts_original/ci_band_lm_kirkedit2.R')
 source('scripts_original/ci_band_plot.R')
 source('scripts_original/pus.R')
-source('scripts_original/ci_boot_kirkedit.R')
+source('scripts_original/ci_boot_kirkedit2.R')
 source('scripts_original/impute_km.R')
 
 site <- 'Tacoma'; site.tag <- 'Tacoma'; site.filetag <- 'Tacoma_Sediment'
@@ -138,8 +139,9 @@ coc.elim <- tmp %>% filter(n.per.loc < 4.5 | mx.d < ymd('2021-01-01')) %>% pus(c
 a04 <- a03 %>% filter(!coc %in% coc.elim)
 
 f <- a04 %>%
-  filter(coc == "Anthracene") 
-#TODO: In the sediment runs, the same error appears regardless of filtering for contaminants.
+  filter(coc == "Anthracene")
+#TODO: In the sediment runs, filtering for some contaminants will produce results, 
+# but the entire run will not go. 
 
 
 ## SEDIMENT Linear Confidence Bands ----
@@ -158,6 +160,25 @@ outfall.cband.plots <- outfall.pair.cband %>% group_by(coc) %>% do(plot={
   print(tcoc)
   hdr <- paste0('99% Confidence Bands for Traps Grouped by Outfall for ',tcoc)
   td <- f %>% filter(coc==tcoc)
+  ci_band_plot(td,.,hdr,vloc=outfall,show.lim=F,pt.size = 2,lab.size = 3)
+})
+dev.off()
+
+## Last 5 year bands and plots
+outfall.pair.cband.5y <- f %>% filter(date >= ymd('2017-01-01')) %>% group_by(coc,outfall) %>% do({
+  td <- .
+  tcoc <- td$coc[1]; tout <- td$outfall[1]
+  print(paste(tcoc,tout))
+  ci_band_lm(td,clev=0.99,side='both')
+}) %>% ungroup()
+
+fn <- paste0(site.filetag,'_cband5y_',fdate,'.pdf')
+pdf(file=fn,w=11,h=8.5)
+outfall.cband.plots.5y <- outfall.pair.cband.5y %>% group_by(coc) %>% do(plot={
+  tcoc= .$coc[1]
+  print(tcoc)
+  hdr <- paste0('99% Confidence Bands for Traps Grouped by Outfall Since 2017 for ',tcoc)
+  td <- f %>% filter(coc==tcoc,date >= ymd('2017-01-01'))
   ci_band_plot(td,.,hdr,vloc=outfall,show.lim=F,pt.size = 2,lab.size = 3)
 })
 dev.off()

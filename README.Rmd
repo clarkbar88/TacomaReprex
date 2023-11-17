@@ -2,10 +2,11 @@ This repository is a mini version of the full Thea Foss Tacoma repository. It ha
 
 Comments have been marked with a TODO: tag for easy identification. 
 
-The scripts that have been tagged with a "kirkedit" suffix indicate the revised scripts that have already been sent over, with the <ys> error replaced with <y>. 
+The scripts that have been tagged with a "kirkedit2" suffix indicate the revised scripts that have already been sent over, with the <ys> error replaced with <y>, and the deparsing errors solved.  
 
-In order to produce the error for troubleshooting, open and run the Y_error_reprex.R script. The error should be the following: 
+In order to produce the error for troubleshooting, open and run the error.R script. The error should be the following: 
 
-ℹ In index: 1.
-Caused by error in `!y`:
-! invalid argument type
+Error in `map()` at scripts_original/ci_band_lm_kirkedit2.R:159:4:
+ℹ In index: 5.
+Caused by error in `X.piv %*% object$cov`:
+! non-conformable arguments

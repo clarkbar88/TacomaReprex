@@ -157,13 +157,13 @@ source('scripts_original/mc_vector.R')
 # case of any NDs
   } else if (any.nd) {
     tmp.out <- map(1:ns,.f=function(.x,xf,...) {
-      xf <- xf %>% mutate(ix=.x,nd.r=0,conc.r=inject(mc_vector(!!y,!!nd,...)))
+      xf <- xf %>% mutate(ix=.x,nd.r=0,conc.r=mc_vector(!!y,!!nd,...))
       out.r <- assemble_fit0(xf,conc.r,pval)
       fit0 <- out.r$fit0; lm.r <- out.r$lmm
         
 # case of no trend; fit extruded confidence interval
       if (is.nan(pval) || pval >= 0.1) {
-        fit <- inject(assemble_ci_fit(xf,conc.r,nd.r,xs))
+        fit <- assemble_ci_fit(xf,conc.r,nd.r,xs)
 # case of mild or better trend; fit simultaneous confidence band
       } else if (pval < 0.1) {
         fit <- assemble_cb_fit(lm.r,xs)

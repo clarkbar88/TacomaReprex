@@ -17,7 +17,7 @@ ci_boot <- function(f,y=conc,nd=nd,clev=0.95,side=c('upr','lwr','both'),impute=c
   library(purrr)
   library(rlang)
   
-## source('whdquantile.R')
+source('scripts_original/whdquantile.R')
 
   
   side <- match.arg(side)
@@ -79,7 +79,7 @@ ci_boot <- function(f,y=conc,nd=nd,clev=0.95,side=c('upr','lwr','both'),impute=c
 ##    yv <- f %>% pull(!!ys); ndv <- f %>% pull(!!nds)
     
     if (impute == 'KM') {
-      yt <- with(f,impute_km(!!y,!!nd,id,tlab='Normal',wt)$f.pp$xhat)
+      yt <- with(f,inject(impute_km(!!y,!!nd,id,tlab='Normal',wt)$f.pp$xhat))
       f <- f %>% mutate(conc.r=yt)
       boot.out <- boot::boot(f,boot_ave,R=nb,stype='i',y=conc.r,parallel = 'multicore',ncpus = 10)
       tmp <- assemble_bootci(boot.out)
