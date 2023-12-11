@@ -17,7 +17,6 @@
 ci_band_lm <- function(f,y=conc,nd=nd,clev=0.95,side=c('upr','lwr','both'),ns=50,...) {
   library(tidyverse)
   library(rlang)
-  library(purrr)
   
 source('scripts_original/ci_compute.R')
 source('scripts_original/mc_vector.R')
@@ -156,7 +155,7 @@ source('scripts_original/mc_vector.R')
       
 # case of any NDs
   } else if (any.nd) {
-    tmp.out <- map(1:ns,.f=function(.x,xf,...) {
+    tmp.out <- purrr::map(1:ns,.f=function(.x,xf,...) {
       xf <- xf %>% mutate(ix=.x,nd.r=0,conc.r=mc_vector(!!y,!!nd,...))
       out.r <- assemble_fit0(xf,conc.r,pval)
       fit0 <- out.r$fit0; lm.r <- out.r$lmm

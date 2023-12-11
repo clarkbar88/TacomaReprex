@@ -85,10 +85,14 @@ impute_km <- function(x,nd,id,tlab='Normal',wt=NULL) {
 # degree of discrepancy from model using tricube weighting function
 ##	  f.pp <- f.pp %>% mutate(qd=qnorm(pp))
     f.tmp <- f.pp %>% filter(nd == 0)
-    rmod <- with(f.tmp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014'))
+    rmod <- with(f.tmp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014'),silent=T)
     rfit <- try(predict(rmod,f.pp,interval = 'prediction',level = 0.99),silent = T)
-    if ('try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
-      rmod <- with(f.tmp,lmrob(qd~xt,method = 'SM',refine.tol=1e-5))
+    if ('try-error' %in% class(rmod) ||'try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
+      rmod <- try(lmrob(qd~xt,data=f.tmp,method = 'SM',refine.tol=1e-5,k.max=300),silent=T)
+      rfit <- try(predict(rmod,f.pp,interval = 'prediction',level = 0.99),silent = T)
+    }
+    if ('try-error' %in% class(rmod) || 'try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
+      rmod <- lm(qd~xt,data = f.tmp)
       rfit <- predict(rmod,f.pp,interval = 'prediction',level = 0.99)
     }
     f.pp <- f.pp %>% mutate(fit=rfit[,1],lwr=rfit[,2],upr=rfit[,3],resid=qd-fit,adj.resid=case_when((qd >= lwr & qd <= upr)~0,TRUE~resid),rwt=pp_tricube(adj.resid,median((upr-lwr)/2)))

@@ -123,7 +123,7 @@ ci_band_plot <- function(f,fit,hdr,vloc=locid,showlines=T,grid=T,show.lim=T,lim.
 
   
 # connect dots if requested
-  if (showlines) p <- p + geom_line(aes(y=conc),size=0.5,color='gray80')
+  if (showlines) p <- p + geom_line(aes(y=conc),linewidth=0.5,color='gray80')
 
 
 # check for all NDs or all detects; adjust symbol plotting accordingly
