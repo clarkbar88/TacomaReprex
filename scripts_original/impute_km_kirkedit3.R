@@ -42,10 +42,14 @@ impute_km <- function(x,nd,id,tlab='Normal',wt=NULL) {
     f.pp <- f.pp %>% arrange(pp,xhat)
     f.pp <- f.pp %>% mutate(qd=qnorm(pp))
 
-    rmod <- with(f.pp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014'))
+    rmod <- try(with(f.pp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014')),silent=T)
     rfit <- try(predict(rmod,f.pp,interval = 'prediction',level = 0.99),silent = T)
     if ('try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
-      rmod <- with(f.pp,lmrob(qd~xt,method = 'SM',refine.tol=1e-5))
+      rmod <- try(with(f.pp,lmrob(qd~xt,method = 'SM',refine.tol=1e-5)),silent=T)
+      rfit <- predict(rmod,f.pp,interval = 'prediction',level = 0.99)
+    }
+    if ('try-error' %in% class(rmod) || 'try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
+      rmod <- lm(qd~xt,data = f.pp)
       rfit <- predict(rmod,f.pp,interval = 'prediction',level = 0.99)
     }
     f.pp <- f.pp %>% mutate(fit=rfit[,1],lwr=rfit[,2],upr=rfit[,3],resid=qd-fit,adj.resid=case_when((qd >= lwr & qd <= upr)~0,TRUE~resid),rwt=pp_tricube(adj.resid,median((upr-lwr)/2)))
@@ -63,7 +67,10 @@ impute_km <- function(x,nd,id,tlab='Normal',wt=NULL) {
 # regress detects on z-scores; then compute imputed values for NDs
 	  ld <- try(lmrob(xt~qd,method = 'SMDM',setting = 'KS2014'),silent = T)
 	  if ('try-error' %in% class(ld) || is.na(ld$coef[1] || is.na(ld$coef[2]))) {
-	    ld <- lmrob(xt~qd,method = 'SM',refine.tol=1e-5)
+	    ld <- try(lmrob(xt~qd,method = 'SM',refine.tol=1e-5),silent=T)
+	  }
+	  if ('try-error' %in% class(ld) || is.na(ld$coef[1] || is.na(ld$coef[2]))) {
+	    ld <- lm(xt~qd)
 	  }
 	  ahat <- ld$coef[1]
 	  bhat <- ld$coef[2]
@@ -85,7 +92,7 @@ impute_km <- function(x,nd,id,tlab='Normal',wt=NULL) {
 # degree of discrepancy from model using tricube weighting function
 ##	  f.pp <- f.pp %>% mutate(qd=qnorm(pp))
     f.tmp <- f.pp %>% filter(nd == 0)
-    rmod <- with(f.tmp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014'),silent=T)
+    rmod <- try(with(f.tmp,lmrob(qd~xt,method = 'SMDM',setting = 'KS2014')),silent=T)
     rfit <- try(predict(rmod,f.pp,interval = 'prediction',level = 0.99),silent = T)
     if ('try-error' %in% class(rmod) ||'try-error' %in% class(rfit) || any(is.na(rfit[,2])) || any(is.na(rfit[,3]))) {
       rmod <- try(lmrob(qd~xt,data=f.tmp,method = 'SM',refine.tol=1e-5,k.max=300),silent=T)
